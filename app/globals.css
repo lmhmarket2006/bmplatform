@@ -2,26 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark theme by default - بيت المصور */
+    --background: 240 22% 5%; /* #0A0A0F */
+    --foreground: 240 100% 99%; /* #F8F8FF */
+
+    --surface: 240 19% 9%; /* #12121A */
+
+    --card: 240 28% 14%; /* #1A1A2E */
+    --card-foreground: 240 100% 99%;
+
+    --popover: 240 28% 14%;
+    --popover-foreground: 240 100% 99%;
+
+    --primary: 276 62% 49%; /* #8B2FC9 */
+    --primary-light: 271 91% 65%; /* #A855F7 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 21% 22%; /* #2D2D44 */
+    --secondary-foreground: 240 100% 99%;
+
+    --muted: 240 21% 16%;
+    --muted-foreground: 240 22% 69%; /* #A0A0C0 */
+
+    --accent: 330 81% 60%; /* #EC4899 */
+    --accent-light: 329 86% 70%; /* #F472B6 */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 21% 22%; /* #2D2D44 */
+    --input: 240 21% 22%;
+    --ring: 276 62% 49%;
+
+    --radius: 0.75rem;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--surface));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #a855f7, #ec4899);
+  }
+  .glass {
+    background: rgba(26, 26, 46, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .glow-primary {
+    box-shadow: 0 0 40px -10px rgba(139, 47, 201, 0.5);
+  }
+  .skeleton {
+    @apply relative overflow-hidden bg-secondary/40;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+    animation: shimmer 1.5s infinite;
   }
 }
