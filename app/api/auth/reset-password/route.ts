@@ -3,11 +3,19 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { handleApiError } from "@/lib/api-utils";
 import { resetPasswordSchema } from "@/lib/validations/auth";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    const limited = enforceRateLimit(req, {
+      name: "reset-password",
+      limit: 10,
+      windowMs: 15 * 60 * 1000,
+    });
+    if (limited) return limited;
+
     const body = await req.json();
     const { token, password } = resetPasswordSchema.parse(body);
 

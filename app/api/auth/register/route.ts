@@ -3,9 +3,19 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
 import { handleApiError } from "@/lib/api-utils";
+import { enforceRateLimit } from "@/lib/rate-limit";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    const limited = enforceRateLimit(req, {
+      name: "register",
+      limit: 5,
+      windowMs: 10 * 60 * 1000,
+    });
+    if (limited) return limited;
+
     const body = await req.json();
     const data = registerSchema.parse(body);
 

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { handleApiError } from "@/lib/api-utils";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
 import { sendEmail, emailButton } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,13 @@ const TOKEN_TTL_MINUTES = 60;
 
 export async function POST(req: Request) {
   try {
+    const limited = enforceRateLimit(req, {
+      name: "forgot-password",
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    });
+    if (limited) return limited;
+
     const body = await req.json();
     const { email } = forgotPasswordSchema.parse(body);
     const normalized = email.toLowerCase();
