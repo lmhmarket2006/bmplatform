@@ -23,5 +23,19 @@ export const loginSchema = z.object({
   password: z.string().min(1, "أدخل كلمة المرور"),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("بريد إلكتروني غير صالح"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(10, "رمز غير صالح"),
+  password: z
+    .string()
+    .min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل")
+    .max(100),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

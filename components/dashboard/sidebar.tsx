@@ -3,15 +3,54 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  ClipboardCheck,
+  GraduationCap,
+  BarChart3,
+  Settings,
+  Award,
+  User,
+  type LucideIcon,
+} from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
+
+/**
+ * مفاتيح الأيقونات تُمرَّر كنصوص من مكوّنات الخادم (Server Components)
+ * لتجنّب تمرير دوال/مكوّنات عبر حدود الخادم/العميل.
+ */
+export type NavIconKey =
+  | "dashboard"
+  | "users"
+  | "courses"
+  | "enrollments"
+  | "instructors"
+  | "reports"
+  | "settings"
+  | "certificates"
+  | "profile";
+
+const iconMap: Record<NavIconKey, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  users: Users,
+  courses: BookOpen,
+  enrollments: ClipboardCheck,
+  instructors: GraduationCap,
+  reports: BarChart3,
+  settings: Settings,
+  certificates: Award,
+  profile: User,
+};
 
 export interface NavItem {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: NavIconKey;
   exact?: boolean;
 }
 
@@ -26,6 +65,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
     <nav className="flex flex-col gap-1 p-3">
       {items.map((item) => {
         const active = isActive(item);
+        const Icon = iconMap[item.icon];
         return (
           <Link
             key={item.href}
@@ -38,7 +78,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
           >
-            <item.icon className="h-5 w-5 shrink-0" />
+            <Icon className="h-5 w-5 shrink-0" />
             {item.label}
           </Link>
         );

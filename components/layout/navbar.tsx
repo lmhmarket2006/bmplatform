@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -46,6 +47,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {status === "loading" ? (
             <div className="h-9 w-24 rounded-lg skeleton" />
           ) : session?.user ? (
@@ -72,13 +74,16 @@ export function Navbar() {
           )}
         </div>
 
-        <button
-          className="md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="القائمة"
-        >
-          {open ? <X /> : <Menu />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button
+            onClick={() => setOpen((v) => !v)}
+            aria-label="القائمة"
+            className="grid h-10 w-10 place-items-center"
+          >
+            {open ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
 
       {/* قائمة الجوال */}

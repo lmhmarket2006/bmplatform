@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/shared/file-upload";
 import {
   Card,
   CardContent,
@@ -88,11 +89,12 @@ export function ProfileForm({ initial, showBio }: ProfileFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label>رابط الصورة الشخصية</Label>
-            <Input
+            <Label>الصورة الشخصية</Label>
+            <FileUpload
               value={form.avatar}
-              onChange={(e) => update("avatar", e.target.value)}
-              placeholder="https://..."
+              onChange={(url) => update("avatar", url)}
+              resourceType="image"
+              hint="صورة مربعة تظهر أفضل"
             />
           </div>
           {showBio && (

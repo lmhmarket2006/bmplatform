@@ -1,25 +1,16 @@
 import { redirect } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  BookOpen,
-  ClipboardCheck,
-  GraduationCap,
-  BarChart3,
-  Settings,
-} from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Sidebar, type NavItem } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
 
 const items: NavItem[] = [
-  { href: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
-  { href: "/admin/enrollments", label: "طلبات التسجيل", icon: ClipboardCheck },
-  { href: "/admin/students", label: "الطلاب", icon: Users },
-  { href: "/admin/courses", label: "الدورات", icon: BookOpen },
-  { href: "/admin/instructors", label: "المدربون", icon: GraduationCap },
-  { href: "/admin/reports", label: "التقارير", icon: BarChart3 },
-  { href: "/admin/settings", label: "الإعدادات", icon: Settings },
+  { href: "/admin", label: "الرئيسية", icon: "dashboard", exact: true },
+  { href: "/admin/enrollments", label: "طلبات التسجيل", icon: "enrollments" },
+  { href: "/admin/students", label: "الطلاب", icon: "users" },
+  { href: "/admin/courses", label: "الدورات", icon: "courses" },
+  { href: "/admin/instructors", label: "المدربون", icon: "instructors" },
+  { href: "/admin/reports", label: "التقارير", icon: "reports" },
+  { href: "/admin/settings", label: "الإعدادات", icon: "settings" },
 ];
 
 export default async function AdminLayout({

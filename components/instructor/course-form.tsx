@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FileUpload } from "@/components/shared/file-upload";
 
 interface CourseFormProps {
   categories: { id: string; name: string }[];
@@ -55,6 +56,8 @@ export function CourseForm({
 
   const level = watch("level");
   const categoryId = watch("categoryId");
+  const thumbnail = watch("thumbnail") ?? "";
+  const previewVideo = watch("previewVideo") ?? "";
 
   async function onSubmit(data: CourseInput) {
     setLoading(true);
@@ -155,14 +158,34 @@ export function CourseForm({
           )}
         </div>
         <div className="space-y-2">
-          <Label>رابط الصورة المصغّرة</Label>
-          <Input placeholder="https://..." {...register("thumbnail")} />
+          <Label>الصورة المصغّرة</Label>
+          <FileUpload
+            value={thumbnail}
+            onChange={(url) =>
+              setValue("thumbnail", url, { shouldValidate: true })
+            }
+            resourceType="image"
+            hint="PNG / JPG — يُفضّل 1280×720"
+          />
+          {errors.thumbnail && (
+            <p className="text-xs text-red-400">{errors.thumbnail.message}</p>
+          )}
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>رابط فيديو المقدمة (اختياري)</Label>
-        <Input placeholder="https://..." {...register("previewVideo")} />
+        <Label>فيديو المقدمة (اختياري)</Label>
+        <FileUpload
+          value={previewVideo}
+          onChange={(url) =>
+            setValue("previewVideo", url, { shouldValidate: true })
+          }
+          resourceType="video"
+          hint="MP4 — مقطع تعريفي قصير"
+        />
+        {errors.previewVideo && (
+          <p className="text-xs text-red-400">{errors.previewVideo.message}</p>
+        )}
       </div>
 
       <Button type="submit" variant="gradient" size="lg" disabled={loading}>

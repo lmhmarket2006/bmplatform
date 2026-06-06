@@ -13,6 +13,8 @@
 - **React Hook Form** + **Zod** + **TanStack Query** + **Zustand**
 - **Prisma ORM** + **PostgreSQL**
 - **NextAuth.js v5** (Credentials) + **bcryptjs**
+- **Cloudinary** (رفع الفيديو/الصور المباشر) + **Nodemailer** (بريد SMTP)
+- **dnd-kit** (سحب وإفلات) + **next-themes** (وضع داكن/فاتح)
 - **Lucide React** + **date-fns** + **Sonner** (إشعارات)
 
 ---
@@ -77,6 +79,17 @@ npm run dev
    NEXT_PUBLIC_PAYMENT_BANK_NAME=مصرف الراجحي
    NEXT_PUBLIC_PAYMENT_ACCOUNT_NAME=أكاديمية بيت المصوّر
    NEXT_PUBLIC_PAYMENT_IBAN=SAxxxxxxxxxxxxxxxxxxxxxx
+
+   # رفع الوسائط (اختياري — بدونها يعمل لصق الروابط يدوياً)
+   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=<cloud-name>
+   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=<unsigned-preset>
+
+   # البريد الإلكتروني (اختياري — بدونها تعمل الإشعارات داخل المنصة فقط)
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=<بريدك>
+   SMTP_PASS=<App Password>
+   SMTP_FROM=بيت المصوّر <no-reply@yourdomain.com>
    ```
 
    > `${{Postgres.DATABASE_URL}}` هو مرجع متغيّر Railway — اضبطه عبر زر **Add Reference**.
@@ -94,15 +107,41 @@ npm run dev
 
 > ملاحظة: لا تنسَ أن يكون `AUTH_URL` مطابقاً لدومين التطبيق على Railway، وإلا ستفشل المصادقة.
 
+### 🔁 النشر التلقائي من GitHub
+
+لجعل Railway يبني وينشر تلقائياً عند كل `git push`:
+
+1. ادفع الكود إلى GitHub: `git push origin main`.
+2. في Railway افتح **خدمة الويب → Settings → Source**.
+3. اضغط **Connect Repo** واختر مستودع `bmplatform` والفرع `main`.
+4. فعّل **Automatic Deployments** (مفعّلة افتراضياً بعد الربط).
+5. (اختياري) في **Settings → Build** اضبط **Watch Paths** أو **Root Directory** إن لزم.
+
+بعد الربط، كل دفعة على `main` ستُطلق بناءً ونشراً جديداً تلقائياً.
+
+---
+
+## ☁️ إعداد Cloudinary للرفع المباشر
+
+1. أنشئ حساباً مجانياً على [cloudinary.com](https://cloudinary.com).
+2. من **Settings → Upload → Upload presets** أنشئ preset بنوع **Signing Mode = Unsigned**.
+3. ضع `Cloud name` واسم الـ preset في المتغيرات `NEXT_PUBLIC_CLOUDINARY_*`.
+4. الآن أزرار «ارفع صورة/فيديو» في النماذج ترفع مباشرة من المتصفح إلى Cloudinary.
+
+> بدون المفاتيح يظهر حقل لصق الرابط فقط — لا شيء يتعطّل.
+
 ---
 
 ## ✨ أبرز الميزات
 
 - **التفعيل اليدوي**: الطالب يرسل طلب تسجيل مع إيصال التحويل → الأدمن يراجع ويفعّل بضغطة زر → إشعار للطالب.
 - **لوحة الأدمن**: إحصائيات، إدارة الطلاب والمدربين والدورات (نشر/تمييز/حذف)، تقارير + تصدير CSV.
-- **لوحة المدرب**: إنشاء الدورات، منشئ المنهج (أقسام + دروس)، نشر الدورة، متابعة تقدّم الطلاب.
+- **لوحة المدرب**: إنشاء الدورات، منشئ المنهج (أقسام + دروس) مع **سحب وإفلات** لإعادة الترتيب، نشر الدورة، متابعة تقدّم الطلاب.
 - **لوحة الطالب**: متابعة من حيث توقّف، مشغّل دروس (MP4/YouTube مع سرعات تشغيل)، شهادات قابلة للطباعة (PDF).
-- **نظام إشعارات** داخل المنصة + حماية كاملة للمسارات حسب الدور عبر `middleware`.
+- **رفع مباشر** للفيديو والصور عبر Cloudinary (دورات، دروس، إيصالات، صور شخصية).
+- **إشعارات بريد إلكتروني** عند طلب التسجيل والتفعيل وإضافة درس وإكمال الدورة (Nodemailer).
+- **استعادة كلمة المرور** عبر رابط بريد آمن صالح لساعة.
+- **وضع داكن/فاتح** قابل للتبديل + **نظام إشعارات** داخل المنصة + حماية المسارات حسب الدور عبر `middleware`.
 
 ---
 
@@ -121,13 +160,6 @@ lib/           prisma, auth, validations, helpers
 prisma/        schema.prisma + seed.ts
 middleware.ts  حماية المسارات حسب الدور
 ```
-
----
-
-## 🔌 خطوات اختيارية لاحقة
-
-- ربط **Cloudinary** لرفع الفيديو/الصور مباشرة (المتغيرات موجودة في `.env.example`).
-- ربط **Nodemailer** لإرسال إشعارات البريد عند التفعيل وإكمال الدورة.
 
 ---
 

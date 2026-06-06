@@ -19,9 +19,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { FileUpload } from "@/components/shared/file-upload";
 import { formatCurrency } from "@/lib/utils";
 import type { EnrollmentStatus } from "@prisma/client";
 
@@ -168,16 +168,13 @@ export function EnrollPanel({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="receipt">رابط صورة الإيصال (اختياري)</Label>
-              <Input
-                id="receipt"
-                placeholder="https://..."
+              <Label htmlFor="receipt">صورة إيصال التحويل (اختياري)</Label>
+              <FileUpload
                 value={receiptImage}
-                onChange={(e) => setReceipt(e.target.value)}
+                onChange={setReceipt}
+                resourceType="image"
+                hint="ارفع صورة الإيصال لتسريع التفعيل"
               />
-              <p className="text-xs text-muted-foreground">
-                ارفع صورة الإيصال على أي خدمة استضافة صور وألصق الرابط هنا.
-              </p>
             </div>
 
             <div className="space-y-2">

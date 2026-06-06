@@ -49,6 +49,7 @@ export async function POST(
         message: `تمت إضافة درس "${data.title}" إلى إحدى دوراتك.`,
         type: "NEW_LESSON",
         link: `/student/courses/${section.courseId}`,
+        email: true,
       }
     );
 

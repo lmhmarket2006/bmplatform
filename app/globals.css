@@ -3,8 +3,47 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light theme (default :root) */
   :root {
-    /* Dark theme by default - بيت المصور */
+    --background: 240 30% 99%; /* #FBFBFE */
+    --foreground: 240 25% 12%; /* #16161F */
+
+    --surface: 240 24% 96%; /* #F1F1F7 */
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 25% 12%;
+
+    --primary: 276 62% 49%; /* #8B2FC9 */
+    --primary-light: 271 81% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 22% 93%;
+    --secondary-foreground: 240 25% 18%;
+
+    --muted: 240 22% 95%;
+    --muted-foreground: 240 8% 42%;
+
+    --accent: 330 81% 56%; /* #EC4899 */
+    --accent-light: 329 86% 64%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 18% 88%;
+    --input: 240 18% 88%;
+    --ring: 276 62% 49%;
+
+    --glass-bg: rgba(255, 255, 255, 0.7);
+
+    --radius: 0.75rem;
+  }
+
+  /* Dark theme - بيت المصور (الافتراضي للمنصة) */
+  .dark {
     --background: 240 22% 5%; /* #0A0A0F */
     --foreground: 240 100% 99%; /* #F8F8FF */
 
@@ -37,7 +76,7 @@
     --input: 240 21% 22%;
     --ring: 276 62% 49%;
 
-    --radius: 0.75rem;
+    --glass-bg: rgba(26, 26, 46, 0.6);
   }
 }
 
@@ -72,7 +111,7 @@
     background-image: linear-gradient(135deg, #a855f7, #ec4899);
   }
   .glass {
-    background: rgba(26, 26, 46, 0.6);
+    background: var(--glass-bg, rgba(26, 26, 46, 0.6));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }

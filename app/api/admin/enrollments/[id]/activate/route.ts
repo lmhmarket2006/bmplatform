@@ -32,6 +32,7 @@ export async function POST(
       message: `تم تفعيل وصولك لدورة "${enrollment.course.title}". يمكنك البدء بالتعلّم الآن.`,
       type: "ENROLLMENT_APPROVED",
       link: `/student/courses/${enrollment.course.id}`,
+      email: true,
     });
 
     return NextResponse.json({ enrollment });

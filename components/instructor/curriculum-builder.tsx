@@ -4,6 +4,23 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   Plus,
   Trash2,
   PlayCircle,
@@ -25,6 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FileUpload } from "@/components/shared/file-upload";
 import { formatSeconds } from "@/lib/utils";
 
 interface LessonData {
@@ -52,6 +70,13 @@ export function CurriculumBuilder({
   const [newSection, setNewSection] = useState("");
   const [addingSection, setAddingSection] = useState(false);
   const [lessonDialog, setLessonDialog] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   async function addSection() {
     if (!newSection.trim()) return;
@@ -121,72 +146,90 @@ export function CurriculumBuilder({
     }
   }
 
+  async function handleSectionDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reordered = arrayMove(sections, oldIndex, newIndex);
+    setSections(reordered);
+    try {
+      const res = await fetch(
+        `/api/instructor/courses/${courseId}/sections/reorder`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderedIds: reordered.map((s) => s.id) }),
+        }
+      );
+      if (!res.ok) throw new Error();
+      toast.success("تم حفظ الترتيب");
+    } catch {
+      toast.error("تعذّر حفظ الترتيب");
+      setSections(sections);
+    }
+  }
+
+  async function handleLessonReorder(
+    sectionId: string,
+    orderedLessons: LessonData[]
+  ) {
+    const previous = sections;
+    setSections((s) =>
+      s.map((sec) =>
+        sec.id === sectionId ? { ...sec, lessons: orderedLessons } : sec
+      )
+    );
+    try {
+      const res = await fetch(
+        `/api/instructor/sections/${sectionId}/lessons/reorder`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderedIds: orderedLessons.map((l) => l.id),
+          }),
+        }
+      );
+      if (!res.ok) throw new Error();
+      toast.success("تم حفظ ترتيب الدروس");
+    } catch {
+      toast.error("تعذّر حفظ الترتيب");
+      setSections(previous);
+    }
+  }
+
   return (
     <div className="space-y-4">
-      {sections.map((section, idx) => (
-        <Card key={section.id} className="overflow-hidden">
-          <div className="flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3">
-            <div className="flex items-center gap-2">
-              <GripVertical className="h-4 w-4 text-muted-foreground" />
-              <span className="font-bold">
-                {idx + 1}. {section.title}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                ({section.lessons.length} دروس)
-              </span>
-            </div>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="text-red-400"
-              onClick={() => deleteSection(section.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="divide-y divide-border">
-            {section.lessons.map((lesson) => (
-              <div
-                key={lesson.id}
-                className="flex items-center justify-between px-4 py-2.5 text-sm"
-              >
-                <span className="flex items-center gap-2">
-                  <PlayCircle className="h-4 w-4 text-primary-light" />
-                  {lesson.title}
-                  {lesson.isFree ? (
-                    <Unlock className="h-3.5 w-3.5 text-emerald-400" />
-                  ) : (
-                    <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
-                </span>
-                <span className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">
-                    {formatSeconds(lesson.duration)}
-                  </span>
-                  <button
-                    onClick={() => deleteLesson(section.id, lesson.id)}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="p-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => setLessonDialog(section.id)}
-            >
-              <Plus className="h-4 w-4" /> إضافة درس
-            </Button>
-          </div>
-        </Card>
-      ))}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleSectionDragEnd}
+      >
+        <SortableContext
+          items={sections.map((s) => s.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {sections.map((section, idx) => (
+            <SortableSection
+              key={section.id}
+              section={section}
+              index={idx}
+              sensors={sensors}
+              onDeleteSection={() => deleteSection(section.id)}
+              onAddLesson={() => setLessonDialog(section.id)}
+              onDeleteLesson={(lessonId) =>
+                deleteLesson(section.id, lessonId)
+              }
+              onReorderLessons={(ordered) =>
+                handleLessonReorder(section.id, ordered)
+              }
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
 
       {/* إضافة قسم */}
       <Card className="p-4">
@@ -217,6 +260,161 @@ export function CurriculumBuilder({
           router.refresh();
         }}
       />
+    </div>
+  );
+}
+
+function SortableSection({
+  section,
+  index,
+  sensors,
+  onDeleteSection,
+  onAddLesson,
+  onDeleteLesson,
+  onReorderLessons,
+}: {
+  section: SectionData;
+  index: number;
+  sensors: ReturnType<typeof useSensors>;
+  onDeleteSection: () => void;
+  onAddLesson: () => void;
+  onDeleteLesson: (lessonId: string) => void;
+  onReorderLessons: (ordered: LessonData[]) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  function handleLessonDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = section.lessons.findIndex((l) => l.id === active.id);
+    const newIndex = section.lessons.findIndex((l) => l.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    onReorderLessons(arrayMove(section.lessons, oldIndex, newIndex));
+  }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card className="overflow-hidden">
+        <div className="flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-3">
+          <div className="flex items-center gap-2">
+            <button
+              className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+              aria-label="اسحب لإعادة الترتيب"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+            <span className="font-bold">
+              {index + 1}. {section.title}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              ({section.lessons.length} دروس)
+            </span>
+          </div>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-red-400"
+            onClick={onDeleteSection}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleLessonDragEnd}
+        >
+          <SortableContext
+            items={section.lessons.map((l) => l.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="divide-y divide-border">
+              {section.lessons.map((lesson) => (
+                <SortableLesson
+                  key={lesson.id}
+                  lesson={lesson}
+                  onDelete={() => onDeleteLesson(lesson.id)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+
+        <div className="p-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={onAddLesson}
+          >
+            <Plus className="h-4 w-4" /> إضافة درس
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function SortableLesson({
+  lesson,
+  onDelete,
+}: {
+  lesson: LessonData;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: lesson.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between bg-card px-4 py-2.5 text-sm"
+    >
+      <span className="flex items-center gap-2">
+        <button
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+          aria-label="اسحب لإعادة الترتيب"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+        <PlayCircle className="h-4 w-4 text-primary-light" />
+        {lesson.title}
+        {lesson.isFree ? (
+          <Unlock className="h-3.5 w-3.5 text-emerald-400" />
+        ) : (
+          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </span>
+      <span className="flex items-center gap-3">
+        <span className="text-xs text-muted-foreground">
+          {formatSeconds(lesson.duration)}
+        </span>
+        <button
+          onClick={onDelete}
+          className="text-red-400 hover:text-red-300"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </span>
     </div>
   );
 }
@@ -294,14 +492,13 @@ function LessonDialog({
           </div>
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
-              <Video className="h-4 w-4" /> رابط الفيديو
+              <Video className="h-4 w-4" /> فيديو الدرس
             </Label>
-            <Input
+            <FileUpload
               value={form.videoUrl}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, videoUrl: e.target.value }))
-              }
-              placeholder="https://... (Cloudinary / YouTube / MP4)"
+              onChange={(url) => setForm((f) => ({ ...f, videoUrl: url }))}
+              resourceType="video"
+              hint="ارفع MP4 أو ألصق رابط Cloudinary / YouTube"
             />
           </div>
           <div className="space-y-2">

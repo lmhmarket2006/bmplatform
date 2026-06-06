@@ -1,14 +1,13 @@
 import { redirect } from "next/navigation";
-import { LayoutDashboard, BookOpen, Award, User } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Sidebar, type NavItem } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
 
 const items: NavItem[] = [
-  { href: "/student", label: "الرئيسية", icon: LayoutDashboard, exact: true },
-  { href: "/student/courses", label: "دوراتي", icon: BookOpen },
-  { href: "/student/certificates", label: "شهاداتي", icon: Award },
-  { href: "/student/profile", label: "الملف الشخصي", icon: User },
+  { href: "/student", label: "الرئيسية", icon: "dashboard", exact: true },
+  { href: "/student/courses", label: "دوراتي", icon: "courses" },
+  { href: "/student/certificates", label: "شهاداتي", icon: "certificates" },
+  { href: "/student/profile", label: "الملف الشخصي", icon: "profile" },
 ];
 
 export default async function StudentLayout({

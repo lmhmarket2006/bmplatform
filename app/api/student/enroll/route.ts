@@ -63,6 +63,7 @@ export async function POST(req: Request) {
         message: `طلب الطالب ${user.name} التسجيل في دورة "${course.title}".`,
         type: "ENROLLMENT_REQUEST",
         link: "/admin/enrollments?status=PENDING",
+        email: true,
       }
     );
 

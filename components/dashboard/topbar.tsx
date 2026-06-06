@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { getInitials } from "@/lib/utils";
 
 interface TopbarProps {
@@ -50,6 +51,8 @@ export function Topbar({ user, roleLabel, profileHref }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        <ThemeToggle />
+
         {/* الإشعارات */}
         <DropdownMenu>
           <DropdownMenuTrigger className="relative grid h-10 w-10 place-items-center rounded-lg hover:bg-secondary">

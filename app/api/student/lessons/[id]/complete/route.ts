@@ -96,6 +96,7 @@ export async function POST(
           message: `لقد أكملت دورة "${course?.title}" وحصلت على شهادتك.`,
           type: "COURSE_COMPLETED",
           link: "/student/certificates",
+          email: true,
         });
       }
     }
