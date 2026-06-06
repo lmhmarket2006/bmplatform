@@ -145,6 +145,28 @@ npm run dev
 
 ---
 
+## 🔒 الأمان
+
+- **رؤوس أمان (Security Headers)** على كل الطلبات عبر `next.config.mjs`:
+  - `Content-Security-Policy` مضبوطة للسماح بـ Cloudinary و YouTube والخطوط فقط.
+  - `Strict-Transport-Security` (HSTS)، `X-Frame-Options: DENY`، `X-Content-Type-Options: nosniff`،
+    `Referrer-Policy`، `Permissions-Policy`، وإخفاء `X-Powered-By`.
+- **تحديد المعدّل (Rate Limiting)** عبر `lib/rate-limit.ts` (في الذاكرة، مناسب لخادم واحد):
+  - تسجيل حساب: 5 محاولات / 10 دقائق.
+  - استعادة كلمة المرور: 5 محاولات / 15 دقيقة.
+  - إعادة تعيين كلمة المرور: 10 محاولات / 15 دقيقة.
+  - **حماية ضد التخمين (Brute force)** عند تسجيل الدخول: 10 محاولات / 10 دقائق لكل (IP + بريد).
+- **تدوير الأسرار**: لتغيير `AUTH_SECRET` على Railway (يُلغي الجلسات الحالية ويتطلب إعادة تسجيل الدخول):
+  ```bash
+  # توليد سر جديد
+  node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+  # تعيينه على الخدمة (يُطلق إعادة نشر تلقائياً)
+  railway variables --service web --set "AUTH_SECRET=<القيمة الجديدة>"
+  ```
+  > ملاحظة: للتوسّع لأكثر من نسخة (instances) استبدل المحدِّد في الذاكرة بـ Redis/Upstash.
+
+---
+
 ## 📁 هيكل المشروع
 
 ```
